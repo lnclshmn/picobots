@@ -1,5 +1,5 @@
 #include <Bluepad32.h>
-#include <Arduino_JSON.h>
+#include <ArduinoJson.h>
 
 #define RX_PIN D4
 #define TX_PIN D5
@@ -46,30 +46,61 @@ void onDisconnectedController(ControllerPtr ctl) {
   }
 }
 
-void dumpGamepad(ControllerPtr ctl) {
-  
-  Serial1.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
 
-  Serial1.printf("idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, %4d, brake: %4d, throttle: %4d, "
-    "misc: 0x%02x, gyro x:%6d y:%6d z:%6d, accel x:%6d y:%6d z:%6d\n",
-    ctl->index(),        // Controller Index
-    ctl->dpad(),         // D-pad
-    ctl->buttons(),      // bitmask of pressed buttons
-    ctl->axisX(),        // (-511 - 512) left X Axis
-    ctl->axisY(),        // (-511 - 512) left Y axis
-    ctl->axisRX(),       // (-511 - 512) right X axis
-    ctl->axisRY(),       // (-511 - 512) right Y axis
-    ctl->brake(),        // (0 - 1023): brake button
-    ctl->throttle(),     // (0 - 1023): throttle (AKA gas) button
-    ctl->miscButtons(),  // bitmask of pressed "misc" buttons
-    ctl->gyroX(),        // Gyro X
-    ctl->gyroY(),        // Gyro Y
-    ctl->gyroZ(),        // Gyro Z
-    ctl->accelX(),       // Accelerometer X
-    ctl->accelY(),       // Accelerometer Y
-    ctl->accelZ()        // Accelerometer Z
-  );
+void dumpGamepad(ControllerPtr ctl) {
+
+  Serial1.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
+  
+  StaticJsonDocument<512> doc;
+
+  doc["index"] = ctl->index();
+  doc["dpad"] = ctl->dpad();
+  doc["buttons"] = ctl->buttons();
+  doc["axisX"] = ctl->axisX();
+  doc["axisY"] = ctl->axisY();
+  doc["axisRX"] = ctl->axisRX();
+  doc["axisRY"] = ctl->axisRY();
+  doc["brake"] = ctl->brake();
+  doc["throttle"] = ctl->throttle();
+  doc["miscButtons"] = ctl->miscButtons();
+  doc["gyroX"] = ctl->gyroX();
+  doc["gyroY"] = ctl->gyroY();
+  doc["gyroZ"] = ctl->gyroZ();
+  doc["accelX"] = ctl->accelX();
+  doc["accelY"] = ctl->accelY();
+  doc["accelZ"] = ctl->accelZ();
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  // Send the JSON string over the serial interface or any other communication channel
+  Serial1.println(jsonString);
 }
+
+// void dumpGamepad(ControllerPtr ctl) {
+  
+//   Serial1.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
+
+//   Serial1.printf("idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, %4d, brake: %4d, throttle: %4d, "
+//     "misc: 0x%02x, gyro x:%6d y:%6d z:%6d, accel x:%6d y:%6d z:%6d\n",
+//     ctl->index(),        // Controller Index
+//     ctl->dpad(),         // D-pad
+//     ctl->buttons(),      // bitmask of pressed buttons
+//     ctl->axisX(),        // (-511 - 512) left X Axis
+//     ctl->axisY(),        // (-511 - 512) left Y axis
+//     ctl->axisRX(),       // (-511 - 512) right X axis
+//     ctl->axisRY(),       // (-511 - 512) right Y axis
+//     ctl->brake(),        // (0 - 1023): brake button
+//     ctl->throttle(),     // (0 - 1023): throttle (AKA gas) button
+//     ctl->miscButtons(),  // bitmask of pressed "misc" buttons
+//     ctl->gyroX(),        // Gyro X
+//     ctl->gyroY(),        // Gyro Y
+//     ctl->gyroZ(),        // Gyro Z
+//     ctl->accelX(),       // Accelerometer X
+//     ctl->accelY(),       // Accelerometer Y
+//     ctl->accelZ()        // Accelerometer Z
+//   );
+// }
 
 void dumpMouse(ControllerPtr ctl) {
   Serial.printf("idx=%d, buttons: 0x%04x, scrollWheel=0x%04x, delta X: %4d, delta Y: %4d\n",
