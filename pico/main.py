@@ -16,53 +16,79 @@ ENB = PWM(Pin(5))
 
 deadzone = 50
 
-left_motor = L298N(ENA, IN1, IN2)     #create a motor1 object
-motor2 = L298N(ENB, IN3, IN4)
-#motor1.setSpeed(40000)            #set the speed of motor1. Speed value varies from 25000 to 65534
+left_motor = L298N(ENA, IN1, IN2) 
+right_motor = L298N(ENB, IN3, IN4)
+
 
 while True:
     if uart.any():
         try:
             log_line = uart.readline().decode('utf-8').rstrip()
             data = eval(log_line)
-            left_axis = abs(data.get('axisY'))
+            left_axis = data.get('axisY')
             right_axis = data.get('axisRY')
             
-            if left_axis or right_axis is not None:
-                print(f"Left Axis value: {left_axis}")
-                print(f"Right Axis value: {right_axis}")
-                
-                if left_axis < deadzone:
-                    left_motor.setSpeed(0)
-                    left_motor.forward()
-                    print('speed at 0')
-                elif left_axis > deadzone and left_axis < 100:
-                    left_motor.setSpeed(30000)
-                    left_motor.forward()
-                elif left_axis >= 100 and left_axis < 200:
-                    left_motor.setSpeed(40000)
-                    left_motor.forward()
-                    print('speed at 40000')
-                elif left_axis >= 200 and left_axis < 300:
-                    left_motor.setSpeed(45000)
-                    left_motor.forward()
-                    print('speed at 45000')
-                elif left_axis >= 300 and left_axis < 400:
-                    left_motor.setSpeed(50000)
-                    left_motor.forward()
-                    print('speed at 50000')
-                elif left_axis >= 400 and left_axis < 512:
-                    left_motor.setSpeed(65000)
-                    left_motor.forward()
-                    print('speed at 65000')
-            else:
+            def translate(value, from_min, from_max, to_min, to_max):
+                if value is None:
+                    return None
+                mod_value = value
+                from_range = from_max - from_min
+                to_range = to_max - to_min
+                scaled_value = float(mod_value - from_min) / float(from_range)
+                final_value = to_min + (scaled_value * to_range)
+                return int(-final_value)
+            
+            print(f"left axis: {left_axis}")
+            left_speed = translate(left_axis, -512, 512, -65534, 65534)
+            print(f"left speed: {left_speed}")
+
+            print(f"right axis: {right_axis}")
+            right_speed = translate(right_axis, -512, 512, -65534, 65534)
+            print(f"right speed: {right_speed}")
+            
+            if left_axis is None:
                 pass
+            elif abs(left_axis) < deadzone:
+                left_motor.setSpeed(0)
+                left_motor.forward() 
+                print('stopped')
+            else:
+                if (left_speed < 0): 
+                    left_motor.setSpeed(abs(left_speed))
+                    left_motor.backward()
+                elif (left_speed > 0):
+                    left_motor.setSpeed(left_speed)
+                    left_motor.forward()
+
+            if right_axis is None:
+                pass
+            elif abs(right_axis) < deadzone:
+                right_motor.setSpeed(0)
+                right_motor.forward()
+                print('stopped')
+            else:
+                if (right_speed < 0): 
+                    right_motor.setSpeed(abs(right_speed))
+                    right_motor.backward()
+                elif (right_speed > 0):
+                    right_motor.setSpeed(right_speed)
+                    right_motor.forward()
+                
+            #else:
+            #    # Map the controller axis value to the motor speed range
+            #    motor_speed = int(map_range(left_axis, 512, -512, 65534, -65534))
+            #    print(motor_speed)
+                #left_motor.setSpeed(abs(motor_speed))  # Use absolute vae
+            #    motor_speed = int(map_range(left_axis, 512, -512, 65534, -65534))
+            #    print(motor_speed)
+                #left_motor.setSpeed(abs(motor_speed))  # Use absolute value to handle negative speeds
+                #if motor_speed > 0:
+                #    left_motor.forward()
+                #else:
+                #    left_motor.backward()
+                #print(f'speed at {motor_speed}')
                 
         except (ValueError, SyntaxError):
             # print("Error: Invalid JSON data received")
             pass
-    time.sleep(0.05)
-        
-
-
-
+    time.sleep(0.01)
