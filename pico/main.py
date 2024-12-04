@@ -3,9 +3,7 @@ from L298N_motor import L298N
 import time
 import machine
 
-# UART0 with TX on Pin 0 and RX on Pin 1
 uart = machine.UART(0, baudrate=115200, tx=machine.Pin(16), rx=machine.Pin(17))
-#ser = serial.Serial(uart)
 
 ENA = PWM(Pin(0))        
 IN1 = Pin(1, Pin.OUT)         
@@ -74,21 +72,6 @@ while True:
                     right_motor.setSpeed(right_speed)
                     right_motor.forward()
                 
-            #else:
-            #    # Map the controller axis value to the motor speed range
-            #    motor_speed = int(map_range(left_axis, 512, -512, 65534, -65534))
-            #    print(motor_speed)
-                #left_motor.setSpeed(abs(motor_speed))  # Use absolute vae
-            #    motor_speed = int(map_range(left_axis, 512, -512, 65534, -65534))
-            #    print(motor_speed)
-                #left_motor.setSpeed(abs(motor_speed))  # Use absolute value to handle negative speeds
-                #if motor_speed > 0:
-                #    left_motor.forward()
-                #else:
-                #    left_motor.backward()
-                #print(f'speed at {motor_speed}')
-                
         except (ValueError, SyntaxError):
-            # print("Error: Invalid JSON data received")
             pass
     time.sleep(0.01)
