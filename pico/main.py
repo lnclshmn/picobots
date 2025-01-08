@@ -3,7 +3,7 @@ from L298N_motor import L298N
 import time
 import machine
 
-uart = machine.UART(0, baudrate=115200, tx=machine.Pin(16), rx=machine.Pin(17))
+uart = machine.UART(0, baudrorate=115200, tx=machine.Pin(16), rx=machine.Pin(17))
 
 ENA = PWM(Pin(0))        
 IN1 = Pin(1, Pin.OUT)         
