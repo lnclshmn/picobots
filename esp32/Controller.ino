@@ -56,12 +56,12 @@ void dumpGamepad(ControllerPtr ctl) {
   doc["index"] = ctl->index();
   doc["dpad"] = ctl->dpad();
   doc["buttons"] = ctl->buttons();
-  doc["axisX"] = ctl->axisX();
-  doc["axisY"] = ctl->axisY();
+  doc["axisLX"] = ctl->axisX();
+  doc["axisLY"] = ctl->axisY();
   doc["axisRX"] = ctl->axisRX();
   doc["axisRY"] = ctl->axisRY();
-  doc["brake"] = ctl->brake();
-  doc["throttle"] = ctl->throttle();
+  doc["leftTrigger"] = ctl->brake();
+  doc["rightTrigger"] = ctl->throttle();
   doc["miscButtons"] = ctl->miscButtons();
   doc["gyroX"] = ctl->gyroX();
   doc["gyroY"] = ctl->gyroY();
