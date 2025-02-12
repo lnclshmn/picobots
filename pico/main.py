@@ -1,9 +1,14 @@
+#######
+# version: 20250211
+#######
+
 from machine import Pin, PWM
 from L298N_motor import L298N
 import time
 import machine
 
-uart = machine.UART(0, baudrorate=115200, tx=machine.Pin(16), rx=machine.Pin(17))
+# UART0 with TX on Pin 0 and RX on Pin 1
+uart = machine.UART(0, baudrate=115200, tx=machine.Pin(16), rx=machine.Pin(17))
 
 ENA = PWM(Pin(0))        
 IN1 = Pin(1, Pin.OUT)         
@@ -14,6 +19,7 @@ ENB = PWM(Pin(5))
 
 deadzone = 50
 
+# Modify the INx pins below if your wheels be running backward
 left_motor = L298N(ENA, IN1, IN2) 
 right_motor = L298N(ENB, IN3, IN4)
 
@@ -23,7 +29,7 @@ while True:
         try:
             log_line = uart.readline().decode('utf-8').rstrip()
             data = eval(log_line)
-            left_axis = data.get('axisY')
+            left_axis = data.get('axisLY')
             right_axis = data.get('axisRY')
             
             def translate(value, from_min, from_max, to_min, to_max):
@@ -48,30 +54,37 @@ while True:
                 pass
             elif abs(left_axis) < deadzone:
                 left_motor.setSpeed(0)
+                #print("left deadzone")
                 left_motor.forward() 
-                print('stopped')
+                #print('left stopped')
             else:
                 if (left_speed < 0): 
                     left_motor.setSpeed(abs(left_speed))
+                    #print("left backward")
                     left_motor.backward()
                 elif (left_speed > 0):
                     left_motor.setSpeed(left_speed)
+                    #print("left forward")
                     left_motor.forward()
 
             if right_axis is None:
                 pass
             elif abs(right_axis) < deadzone:
                 right_motor.setSpeed(0)
+                #print("right deadzone")
                 right_motor.forward()
-                print('stopped')
+                #print('right stopped')
             else:
                 if (right_speed < 0): 
                     right_motor.setSpeed(abs(right_speed))
+                    #print("right backward")
                     right_motor.backward()
                 elif (right_speed > 0):
                     right_motor.setSpeed(right_speed)
+                    #print("right forward")
                     right_motor.forward()
                 
         except (ValueError, SyntaxError):
+            print("Error: Invalid JSON data received")
             pass
     time.sleep(0.01)
